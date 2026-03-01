@@ -5,6 +5,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Inventory Simulator</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/wgg-icon.png') }}">
+  <link rel="apple-touch-icon" href="{{ asset('images/wgg-icon.png') }}">
   @vite(['resources/css/app.css', 'resources/js/app.js'])
   <style>
     html,
