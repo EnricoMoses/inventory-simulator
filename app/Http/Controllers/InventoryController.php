@@ -82,9 +82,13 @@ class InventoryController extends Controller
      */
     public function destroy(string $id)
     {
-        Item::findOrFail($id)->delete();
-
-        return redirect()->route('inventory.index')
-            ->with('success', 'Item deleted successfully!');
+        try {
+            Item::findOrFail($id)->delete();
+            return redirect()->route('inventory.index')
+                ->with('success', 'Item deleted successfully!');
+        } catch (\Exception $e) {
+            return redirect()->route('inventory.index')
+                ->with('error', 'Failed to delete item.');
+        }
     }
 }

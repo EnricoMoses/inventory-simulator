@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Inventory Simulator</title>
-  @vite(['resources/css/app.css'])
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
   <style>
     html,
     body {

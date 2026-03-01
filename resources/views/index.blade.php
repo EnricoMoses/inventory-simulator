@@ -1,21 +1,15 @@
 @extends('layouts.form')
 
 @section('content')
-  @if (session('success'))
-    <div class="bg-green-500/80 backdrop-blur-md text-white px-4 py-2 rounded-lg mb-6 text-center">
-      {{ session('success') }}
-    </div>
-  @endif
-
-
   {{-- FORM SECTION --}}
-  <div class="relative z-30 overflow-visible backdrop-blur-xl bg-white/10 border border-white/30 rounded-2xl p-8 shadow-2xl mb-12">
+  <div
+    class="relative z-30 overflow-visible backdrop-blur-xl bg-white/10 border border-white/30 rounded-2xl p-8 shadow-2xl mb-12">
 
     <h2 class="text-2xl font-semibold text-white mb-8 text-center">
       {{ isset($editItem) ? 'Edit Item' : 'Add New Item' }}
     </h2>
 
-    <form method="POST"
+    <form method="POST" class="main-form"
       action="{{ isset($editItem) ? route('inventory.update', $editItem->id) : route('inventory.store') }}">
       @csrf
       @if (isset($editItem))
@@ -31,17 +25,18 @@
             Item Name
           </label>
 
-          <input type="text" name="name" value="{{ old('name', $editItem->name ?? '') }}"
+          <input type="text" name="name" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+            value="{{ old('name', $editItem->name ?? '') }}"
             class="w-full bg-transparent border rounded-xl px-4 py-3 text-white
-               transition-all duration-300
-               focus:outline-none
-               focus:ring-2 focus:ring-white/40
-               focus:shadow-[0_0_15px_rgba(255,255,255,0.3)]
-               @error('name')
-                    border-red-400 focus:ring-red-400 focus:shadow-[0_0_15px_rgba(248,113,113,0.5)]
-               @else
-                    border-white/40
-               @enderror">
+           transition-all duration-300
+           focus:outline-none
+           focus:ring-2 focus:ring-white/40
+           focus:shadow-[0_0_15px_rgba(255,255,255,0.3)]
+           @error('name')
+                border-red-400 focus:ring-red-400 focus:shadow-[0_0_15px_rgba(248,113,113,0.5)]
+           @else
+                border-white/40
+           @enderror">
 
           @error('name')
             <p class="text-red-400 text-sm mt-2 animate-fadeIn">
@@ -73,12 +68,12 @@
             {{-- Custom Arrows --}}
             <div class="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-1 text-white/80">
 
-              <button type="button" onclick="this.closest('.relative').querySelector('input').stepUp()"
+              <button type="button" tabindex="-1" onclick="this.closest('.relative').querySelector('input').stepUp()"
                 class="hover:text-white transition leading-none text-sm">
                 ▲
               </button>
 
-              <button type="button" onclick="this.closest('.relative').querySelector('input').stepDown()"
+              <button type="button" tabindex="-1" onclick="this.closest('.relative').querySelector('input').stepDown()"
                 class="hover:text-white transition leading-none text-sm">
                 ▼
               </button>
@@ -104,10 +99,13 @@
 
           <input type="hidden" name="category" :value="selected">
 
-          <div @click="open = !open" :class="open ? 'ring-2 ring-white/40' : ''"
+          <div tabindex="0" @click="open = !open" @keydown.enter.prevent="open = !open"
+            @keydown.space.prevent="open = !open" @keydown.arrow-down.prevent="open = true"
+            :class="open ? 'ring-2 ring-white/40' : ''"
             class="w-full bg-transparent border border-white/40
-                rounded-xl px-4 py-3 flex justify-between items-center
-                cursor-pointer transition-all duration-300">
+           rounded-xl px-4 py-3 flex justify-between items-center
+           cursor-pointer transition-all duration-300
+           focus:outline-none focus:ring-2 focus:ring-white/40">
 
             <span x-text="selected" class="text-white"></span>
 
@@ -125,8 +123,9 @@
                 border border-white/30 rounded-xl overflow-hidden z-50">
 
             @foreach (['Spring', 'Summer', 'Autumn', 'Winter'] as $cat)
-              <div @click="selected='{{ $cat }}'; open=false"
-                class="px-4 py-3 text-white hover:bg-white/20 cursor-pointer transition">
+              <div tabindex="0" @click="selected='{{ $cat }}'; open=false"
+                @keydown.enter.prevent="selected='{{ $cat }}'; open=false"
+                class="px-4 py-3 text-white hover:bg-white/20 cursor-pointer transition focus:bg-white/20">
                 {{ $cat }}
               </div>
             @endforeach
@@ -198,20 +197,29 @@
 
               <td class="flex justify-center gap-3 py-2">
 
-                <a href="{{ route('inventory.edit', $item->id) }}"
+                <a href="{{ route('inventory.edit', $item->id) }}" tabindex="0"
                   class="bg-blue-500 hover:bg-blue-600
-                                       text-white px-3 py-1 rounded-lg text-sm">
+          text-white px-3 py-1 rounded-lg text-sm
+          focus:outline-none
+          focus:ring-2 focus:ring-white/60
+          focus:shadow-[0_0_10px_rgba(255,255,255,0.6)]
+          transition"
+                  aria-label="Edit item {{ $item->name }}">
                   Edit
                 </a>
 
-                <form method="POST" action="{{ route('inventory.destroy', $item->id) }}"
-                  onsubmit="return confirm('Delete this item?')">
+                <form method="POST" action="{{ route('inventory.destroy', $item->id) }}" class="delete-form">
                   @csrf
                   @method('DELETE')
 
-                  <button
+                  <button type="submit"
                     class="bg-red-500 hover:bg-red-600
-                                           text-white px-3 py-1 rounded-lg text-sm">
+           text-white px-3 py-1 rounded-lg text-sm
+           focus:outline-none
+           focus:ring-2 focus:ring-white/60
+           focus:shadow-[0_0_10px_rgba(255,255,255,0.6)]
+           transition"
+                    aria-label="Delete item {{ $item->name }}">
                     Delete
                   </button>
                 </form>
@@ -232,4 +240,147 @@
     </div>
 
   </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+      const glassSwal = Swal.mixin({
+        background: "rgba(255,255,255,0.12)",
+        backdrop: "rgba(0,0,0,0.5)",
+        color: "#fff",
+        confirmButtonColor: "#22c55e",
+        cancelButtonColor: "#ef4444",
+        customClass: {
+          popup: 'backdrop-blur-xl border border-white/30 rounded-2xl',
+          title: 'font-geologica text-white'
+        },
+
+        didOpen: (popup) => {
+          gsap.fromTo(popup, {
+            opacity: 0,
+            y: -50,
+            scale: 0.9,
+            filter: "blur(10px)"
+          }, {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            filter: "blur(0px)",
+            duration: 0.5,
+            ease: "power3.out"
+          });
+        },
+
+        willClose: (popup) => {
+          return new Promise((resolve) => {
+            gsap.to(popup, {
+              opacity: 0,
+              y: -40,
+              scale: 0.95,
+              duration: 0.3,
+              ease: "power2.in",
+              onComplete: resolve
+            });
+          });
+        }
+      });
+
+      /* =========================
+         HANDLE DELETE + FORM
+      ========================= */
+      document.body.addEventListener("submit", function(e) {
+
+        /* DELETE */
+        if (e.target.classList.contains("delete-form")) {
+          e.preventDefault();
+
+          glassSwal.fire({
+            title: "Delete Item?",
+            text: "This action cannot be undone.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Delete"
+          }).then((result) => {
+
+            if (result.isConfirmed) {
+
+              /* LOADING */
+              glassSwal.fire({
+                title: "Processing...",
+                allowOutsideClick: false,
+                didOpen: () => {
+                  Swal.showLoading();
+                }
+              });
+
+              e.target.submit();
+            }
+
+          });
+        }
+
+        /* CREATE & UPDATE */
+        if (e.target.classList.contains("main-form")) {
+          e.preventDefault();
+
+          glassSwal.fire({
+            title: "Confirm Submission?",
+            text: "Do you want to save this data?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Save"
+          }).then((result) => {
+
+            if (result.isConfirmed) {
+
+              /* LOADING */
+              glassSwal.fire({
+                title: "Processing...",
+                allowOutsideClick: false,
+                didOpen: () => {
+                  Swal.showLoading();
+                }
+              });
+
+              e.target.submit();
+            }
+
+          });
+        }
+
+      });
+
+      /* =========================
+         SUCCESS TOAST
+      ========================= */
+      @if (session('success'))
+        Toastify({
+          text: "{{ session('success') }}",
+          duration: 3000,
+          gravity: "top",
+          position: "right",
+          style: {
+            background: "rgba(34,197,94,0.9)",
+            backdropFilter: "blur(12px)",
+            border: "1px solid rgba(255,255,255,0.3)",
+            color: "#fff",
+            borderRadius: "12px",
+            boxShadow: "0 0 25px rgba(34,197,94,0.6)"
+          }
+        }).showToast();
+      @endif
+
+      /* =========================
+         ERROR ALERT
+      ========================= */
+      @if (session('error'))
+        glassSwal.fire({
+          icon: "error",
+          title: "Error",
+          text: "{{ session('error') }}"
+        });
+      @endif
+
+    });
+  </script>
 @endsection
